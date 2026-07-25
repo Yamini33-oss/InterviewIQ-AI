@@ -118,7 +118,7 @@ Displays all instrumented backend services detected by SigNoz.
 
 ## 📌 Trace Details
 
-![Trace Details](screenshots/trace-details.png)
+![Trace Details](screenshots/trace.png)
 
 Shows every request with execution time and complete trace information.
 
@@ -126,7 +126,7 @@ Shows every request with execution time and complete trace information.
 
 ## 📌 Flame Graph
 
-![Flame Graph](screenshots/flame-graph.png)
+![Flame Graph](screenshots/flamegraph.png)
 
 Visualizes where execution time is spent inside the application.
 
