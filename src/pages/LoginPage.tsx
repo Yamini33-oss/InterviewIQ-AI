@@ -1,3 +1,4 @@
+import { supabase } from "../lib/supabase";
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -13,6 +14,52 @@ const benefits = [
 export default function LoginPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'signup'>('login');
+
+  const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [fullName, setFullName] = useState("");
+const [loading, setLoading] = useState(false);
+
+const handleAuth = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    if (mode === "signup") {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("Account created successfully! Please check your email.");
+        setMode("login");
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  } catch (err) {
+    alert("Something went wrong.");
+  }
+
+  setLoading(false);
+};
 
   return (
     <div className="relative min-h-screen grid lg:grid-cols-2">
@@ -102,7 +149,18 @@ export default function LoginPage() {
 
           {/* Google sign-in */}
           <button
-            onClick={() => navigate('/dashboard')}
+            onClick={async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin + "/dashboard",
+    },
+  });
+
+  if (error) {
+    alert(error.message);
+  }
+}}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl glass glass-hover px-4 py-3 text-sm font-medium text-white"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -121,10 +179,7 @@ export default function LoginPage() {
           </div>
 
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              navigate('/dashboard');
-            }}
+            onSubmit={handleAuth}
             className="space-y-4"
           >
             {mode === 'signup' && (
@@ -132,7 +187,12 @@ export default function LoginPage() {
                 <label className="mb-1.5 block text-sm font-medium text-slate-300">Full Name</label>
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                  <input className="input-field pl-11" placeholder="John Doe" />
+                  <input
+className="input-field pl-11"
+placeholder="John Doe"
+value={fullName}
+onChange={(e) => setFullName(e.target.value)}
+/>
                 </div>
               </div>
             )}
@@ -140,14 +200,26 @@ export default function LoginPage() {
               <label className="mb-1.5 block text-sm font-medium text-slate-300">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input type="email" className="input-field pl-11" placeholder="you@example.com" />
+   <input
+type="email"
+className="input-field pl-11"
+placeholder="you@example.com"
+value={email}
+onChange={(e) => setEmail(e.target.value)}
+/>
               </div>
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-300">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-                <input type="password" className="input-field pl-11" placeholder="••••••••" />
+                <input
+type="password"
+className="input-field pl-11"
+placeholder="••••••••"
+value={password}
+onChange={(e) => setPassword(e.target.value)}
+/>
               </div>
             </div>
 
@@ -161,8 +233,16 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="submit" className="btn-primary w-full">
-              {mode === 'login' ? 'Sign In' : 'Create Account'}
+            <button
+  type="submit"
+  disabled={loading}
+  className="btn-primary w-full"
+>
+              {loading
+  ? "Please wait..."
+  : mode === "login"
+  ? "Sign In"
+  : "Create Account"}
               <ArrowRight className="h-4 w-4" />
             </button>
           </form>

@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { jsPDF } from "jspdf";
+import { useLocation } from "react-router-dom";
 import {
   Download, RotateCcw, LayoutDashboard, TrendingUp, TrendingDown,
   CheckCircle2, AlertTriangle, Lightbulb, BookOpen, Award, Star,
@@ -8,28 +10,89 @@ import Navbar from '../components/Navbar';
 import GlassCard from '../components/GlassCard';
 import RadarChart from '../components/RadarChart';
 import ProgressBar from '../components/ProgressBar';
-import { resultData } from '../data/mockData';
 
+export default function ResultPage() {
+  const location = useLocation();
+
+const resultData = (location.state as {
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  feedback: string;
+}) ?? {
+  score: 0,
+  strengths: [],
+  weaknesses: [],
+  feedback: "No feedback available.",
+};
 const scoreCards = [
-  { label: 'Technical', value: resultData.scores.technical, icon: TrendingUp, color: 'from-brand-500 to-violetx-600' },
-  { label: 'Communication', value: resultData.scores.communication, icon: Star, color: 'from-cyanx-500 to-brand-500' },
-  { label: 'Confidence', value: resultData.scores.confidence, icon: Award, color: 'from-amber-500 to-orange-500' },
-  { label: 'Problem Solving', value: resultData.scores.problemSolving, icon: Lightbulb, color: 'from-emerald-500 to-cyanx-500' },
+  {
+    label: "Technical",
+    value: resultData.score,
+    icon: TrendingUp,
+    color: "from-brand-500 to-violetx-600",
+  },
+  {
+    label: "Communication",
+    value: Math.max(resultData.score - 5, 0),
+    icon: Star,
+    color: "from-cyanx-500 to-brand-500",
+  },
+  {
+    label: "Confidence",
+    value: Math.max(resultData.score - 3, 0),
+    icon: Award,
+    color: "from-amber-500 to-orange-500",
+  },
+  {
+    label: "Problem Solving",
+    value: Math.max(resultData.score - 2, 0),
+    icon: Lightbulb,
+    color: "from-emerald-500 to-cyanx-500",
+  },
 ];
 
 const radarData = [
-  { label: 'Technical', value: resultData.scores.technical },
-  { label: 'Communication', value: resultData.scores.communication },
-  { label: 'Confidence', value: resultData.scores.confidence },
-  { label: 'Problem Solving', value: resultData.scores.problemSolving },
-  { label: 'Clarity', value: 79 },
-  { label: 'Depth', value: 83 },
+  { label: "Technical", value: resultData.score },
+  { label: "Communication", value: Math.max(resultData.score - 5, 0) },
+  { label: "Confidence", value: Math.max(resultData.score - 3, 0) },
+  { label: "Problem Solving", value: Math.max(resultData.score - 2, 0) },
+  { label: "Clarity", value: Math.max(resultData.score - 4, 0) },
+  { label: "Depth", value: Math.max(resultData.score - 1, 0) },
 ];
-
-export default function ResultPage() {
   const scoreColor = (v: number) =>
     v >= 85 ? 'text-emerald-400' : v >= 70 ? 'text-amber-400' : 'text-rose-400';
+  const downloadReport = () => {
+  const doc = new jsPDF();
 
+  doc.setFontSize(20);
+  doc.text("InterviewIQ AI Report", 20, 20);
+
+  doc.setFontSize(14);
+  doc.text(`Overall Score: ${resultData.score}/100`, 20, 40);
+
+  doc.text("Strengths:", 20, 60);
+  resultData.strengths.forEach((item: string, index: number) => {
+    doc.text(`• ${item}`, 25, 70 + index * 10);
+  });
+
+  const weakStart = 80 + resultData.strengths.length * 10;
+
+  doc.text("Weaknesses:", 20, weakStart);
+  resultData.weaknesses.forEach((item: string, index: number) => {
+    doc.text(`• ${item}`, 25, weakStart + 10 + index * 10);
+  });
+
+  const feedbackStart =
+    weakStart + 20 + resultData.weaknesses.length * 10;
+
+  doc.text("Feedback:", 20, feedbackStart);
+  doc.text(resultData.feedback, 20, feedbackStart + 10, {
+    maxWidth: 170,
+  });
+
+  doc.save("Interview_Report.pdf");
+};
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -56,10 +119,12 @@ export default function ResultPage() {
             <div className="text-center sm:text-left">
               <p className="text-sm text-slate-400">Overall Score</p>
               <div className="mt-2 flex items-end gap-2">
-                <span className="font-display text-6xl font-bold gradient-text">{resultData.overall}</span>
+                <span className="font-display text-6xl font-bold gradient-text">{resultData.score}</span>
                 <span className="mb-2 text-2xl text-slate-500">/100</span>
               </div>
-              <p className="mt-2 text-sm text-emerald-400">+8% from last interview</p>
+              <p className="mt-2 text-sm text-emerald-400">
+  Interview completed successfully
+</p>
             </div>
             <div className="flex gap-3">
               <Link to="/setup" className="btn-ghost px-5 py-2.5 text-sm">
@@ -70,7 +135,10 @@ export default function ResultPage() {
                 <LayoutDashboard className="h-4 w-4" />
                 Dashboard
               </Link>
-              <button className="btn-primary px-5 py-2.5 text-sm">
+              <button
+  onClick={downloadReport}
+  className="btn-primary px-5 py-2.5 text-sm"
+>
                 <Download className="h-4 w-4" />
                 Download Report
               </button>
@@ -127,13 +195,13 @@ export default function ResultPage() {
               ))}
               <ProgressBar
                 label="Clarity"
-                value={79}
+                 value={Math.max(resultData.score - 4, 0)}
                 delay={0.4}
                 color="from-brand-500 to-cyanx-500"
               />
               <ProgressBar
                 label="Depth"
-                value={83}
+                  value={Math.max(resultData.score - 1, 0)}
                 delay={0.45}
                 color="from-violetx-500 to-brand-500"
               />
@@ -151,7 +219,7 @@ export default function ResultPage() {
               <h3 className="font-display text-lg font-semibold text-white">Strengths</h3>
             </div>
             <ul className="mt-5 space-y-3">
-              {resultData.strengths.map((s, i) => (
+              {resultData.strengths?.map((s: string, i: number) => (
                 <motion.li
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -175,7 +243,7 @@ export default function ResultPage() {
               <h3 className="font-display text-lg font-semibold text-white">Weaknesses</h3>
             </div>
             <ul className="mt-5 space-y-3">
-              {resultData.weaknesses.map((s, i) => (
+              {resultData.weaknesses?.map((s: string, i: number) => (
                 <motion.li
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -204,55 +272,11 @@ export default function ResultPage() {
             </div>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {resultData.suggestions.map((s, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/5"
-              >
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-violetx-500/20 text-xs font-bold text-violetx-300">
-                  {i + 1}
-                </span>
-                <span className="text-sm text-slate-300">{s}</span>
-              </motion.div>
-            ))}
-          </div>
-        </GlassCard>
-
-        {/* Learning resources */}
-        <GlassCard delay={0.55} className="mt-6 p-6">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-cyanx-500 to-emerald-500 shadow-glow">
-              <BookOpen className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-display text-lg font-semibold text-white">Recommended Learning Resources</h3>
-              <p className="text-sm text-slate-400">Curated based on your performance gaps</p>
-            </div>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            {resultData.resources.map((r, i) => (
-              <motion.a
-                key={i}
-                href={r.url}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:border-white/10 hover:bg-white/5"
-              >
-                <div>
-                  <p className="text-sm font-medium text-white">{r.title}</p>
-                  <p className="text-xs text-slate-500">{r.type}</p>
-                </div>
-                <span className="chip text-brand-300 transition-transform group-hover:translate-x-1">
-                  Open
-                </span>
-              </motion.a>
-            ))}
+            <div className="mt-5 rounded-xl border border-white/5 bg-white/[0.02] p-4">
+  <p className="text-slate-300">
+    {resultData.feedback}
+  </p>
+</div>
           </div>
         </GlassCard>
 

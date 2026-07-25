@@ -1,3 +1,4 @@
+import { supabase } from "../lib/supabase";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -30,6 +31,7 @@ export default function InterviewPage() {
   const [thinking, setThinking] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [completed, setCompleted] = useState(0);
+const [results, setResults] = useState<any[]>([]);
 
   useEffect(() => {
     const timer = setInterval(() => setElapsed((e) => e + 1), 1000);
@@ -42,29 +44,106 @@ export default function InterviewPage() {
     return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   };
 
-  const handleSubmit = () => {
-    if (!answer.trim()) return;
-    setThinking(true);
-    setAnswer('');
-    setTimeout(() => {
+const evaluateAnswer = async (question: string, answer: string) => {
+  const response = await fetch("http://localhost:5000/api/evaluate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      question,
+      answer,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Evaluation failed");
+  }
+
+  return await response.json();
+};
+  const handleSubmit = async () => {
+  if (!answer.trim()) return;
+
+  setThinking(true);
+
+  const currentAnswer = answer;
+  setAnswer("");
+
+  try {
+    const aiResult = await evaluateAnswer(
+      questions[current],
+      currentAnswer
+    );
+    setResults(prev => [...prev, aiResult]);
+
+    console.log("Groq Result:", aiResult);
+    const allResults = [...results, aiResult];
+
+const totalScore = allResults.reduce(
+  (sum, r) => sum + r.score,
+  0
+);
+
+const averageScore = Math.round(
+  totalScore / allResults.length
+);
+
+    if (current < questions.length - 1) {
       setThinking(false);
       setCompleted((c) => c + 1);
-      if (current < questions.length - 1) {
-        setCurrent((c) => c + 1);
-      } else {
-        navigate('/result');
-      }
-    }, 2200);
-  };
+      setCurrent((c) => c + 1);
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data, error } = await supabase
+        .from("interviews")
+        .insert({
+          user_id: user.id,
+          interview_type: state.type,
+          difficulty: state.difficulty,
+          duration: formatTime(elapsed),
+          questions: questions.length,
+          feedback: aiResult.feedback,
+          strengths: aiResult.strengths,
+          weaknesses: aiResult.weaknesses,
+        });
+
+      console.log("Interview Insert:", data);
+      console.log("Interview Error:", error);
+    }
+
+    navigate("/result", {
+  state: {
+    score: averageScore,
+    feedback: allResults.map(r => r.feedback),
+    strengths: allResults.flatMap(r => r.strengths),
+    weaknesses: allResults.flatMap(r => r.weaknesses),
+    results: allResults
+  }
+});
+
+  } catch (err) {
+  console.error("FULL ERROR:", err);
+  alert("ERROR: " + JSON.stringify(err));
+  setThinking(false);
+}
+};
+
 
   const handleSkip = () => {
-    if (current < questions.length - 1) {
-      setCurrent((c) => c + 1);
-      setAnswer('');
-    } else {
-      navigate('/result');
-    }
-  };
+  if (current < questions.length - 1) {
+    setCurrent((c) => c + 1);
+    setAnswer("");
+  } else {
+    navigate("/result");
+  }
+};
 
   const handleEnd = () => navigate('/result');
 
@@ -233,6 +312,9 @@ export default function InterviewPage() {
                     <span>{answer.length} characters</span>
                     <span>{answer.trim().split(/\s+/).filter(Boolean).length} words</span>
                   </div>
+                  <p className="mt-3 text-xs text-cyanx-300">
+  💡 Write your complete answer first. Your response will be evaluated only after you click <strong>Submit Answer</strong>.
+</p>
 
                   <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <button
@@ -241,7 +323,9 @@ export default function InterviewPage() {
                       className="btn-ghost px-5 py-2.5 text-sm"
                     >
                       <SkipForward className="h-4 w-4" />
-                      Skip Question
+{current === questions.length - 1
+  ? "Finish Interview"
+  : "Next Question"}
                     </button>
                     <button
                       onClick={handleSubmit}
