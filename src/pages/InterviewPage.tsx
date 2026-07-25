@@ -25,7 +25,7 @@ export default function InterviewPage() {
     numQuestions: 5,
   };
 
-  const questions = questionBank[state.type].slice(0, state.numQuestions);
+const questions = questionBank[state.type]?.slice(0, state.numQuestions) || [];
   const [current, setCurrent] = useState(0);
   const [answer, setAnswer] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -57,8 +57,10 @@ const evaluateAnswer = async (question: string, answer: string) => {
   });
 
   if (!response.ok) {
-    throw new Error("Evaluation failed");
-  }
+  const errorText = await response.text();
+  console.error("Backend Error:", errorText);
+  throw new Error(errorText);
+}
 
   return await response.json();
 };
@@ -118,7 +120,7 @@ const averageScore = Math.round(
       console.log("Interview Error:", error);
     }
 
-    navigate("/result", {
+   navigate("/result", {
   state: {
     score: averageScore,
     feedback: allResults.map(r => r.feedback),
@@ -129,10 +131,9 @@ const averageScore = Math.round(
 });
 
   } catch (err) {
-  console.error("FULL ERROR:", err);
-  alert("ERROR: " + JSON.stringify(err));
-  setThinking(false);
-}
+    console.error("FULL ERROR:", err);
+    setThinking(false);
+  }
 };
 
 
