@@ -171,51 +171,60 @@ Using SigNoz provides valuable insights into backend performance by enabling:
 This makes identifying slow operations and debugging backend issues significantly easier.
 
 ---
+## 📋 Prerequisites
 
-# 🚀 Running the Project
+Before running the project, make sure you have the following installed:
 
-## Clone Repository
+- Node.js (v18 or later)
+- npm
+- Docker Desktop
+- SigNoz (running locally)
+- OpenTelemetry dependencies (installed automatically with `npm install`)
+---
+
+## 🚀 Running the Project
+
+### 1. Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/Yamini33-oss/InterviewIQ-AI.git
 cd InterviewIQ-AI
 ```
 
----
-
-## Frontend
+### 2. Install Frontend Dependencies
 
 ```bash
 npm install
+```
+
+### 3. Start the Frontend
+
+```bash
 npm run dev
 ```
 
----
-
-## Backend
+### 4. Install Backend Dependencies
 
 ```bash
 cd backend
 npm install
+```
+
+### 5. Start the Backend
+
+```bash
 npm run dev
 ```
 
----
+### 6. Start SigNoz
 
-## Start SigNoz
+Make sure Docker Desktop is running and start your local SigNoz instance.
 
-```bash
-cd deployment
-docker compose up -d
-```
+Then open:
 
-Open:
-
-```
+```text
 http://localhost:8080
 ```
-
----
 
 # 📊 Viewing Traces in SigNoz
 
