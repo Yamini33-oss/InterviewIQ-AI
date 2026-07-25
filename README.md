@@ -118,7 +118,7 @@ Displays all instrumented backend services detected by SigNoz.
 
 ## 📌 Trace Details
 
-![Trace Details](screenshots/trace.png)
+![Trace Details](screenshots/traces.png)
 
 Shows every request with execution time and complete trace information.
 
