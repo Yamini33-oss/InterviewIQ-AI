@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000";
+const API_URL  = "https://zippy-freedom-production.up.railway.app";
 
 export async function getBackendMessage() {
   const response = await fetch(`${API_URL}/api/message`);

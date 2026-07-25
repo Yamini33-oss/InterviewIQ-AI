@@ -45,7 +45,7 @@ const [results, setResults] = useState<any[]>([]);
   };
 
 const evaluateAnswer = async (question: string, answer: string) => {
-  const response = await fetch("http://localhost:5000/api/evaluate", {
+  const response = await fetch("https://zippy-freedom-production.up.railway.app/api/evaluate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

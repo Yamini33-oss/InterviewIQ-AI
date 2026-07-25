@@ -223,7 +223,7 @@ Make sure Docker Desktop is running and start your local SigNoz instance.
 Then open:
 
 ```text
-http://localhost:8080
+https://zippy-freedom-production.up.railway.app
 ```
 
 # 📊 Viewing Traces in SigNoz
