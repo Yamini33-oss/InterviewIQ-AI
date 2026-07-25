@@ -8,7 +8,11 @@ const router = express.Router();
 
 
 router.post("/evaluate", async (req, res) => {
-  const groq = new Groq({
+  if (!process.env.GROQ_API_KEY) {
+  throw new Error("GROQ_API_KEY is missing");
+}
+
+const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
   const mainSpan = tracer.startSpan("Evaluate Interview");
