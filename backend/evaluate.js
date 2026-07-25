@@ -6,11 +6,11 @@ const { trace, context } = require("@opentelemetry/api");
 const tracer = trace.getTracer("interviewiq");
 const router = express.Router();
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
 
 router.post("/evaluate", async (req, res) => {
+  const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
   const mainSpan = tracer.startSpan("Evaluate Interview");
 
   await context.with(trace.setSpan(context.active(), mainSpan), async () => {

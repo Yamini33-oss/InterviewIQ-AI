@@ -1,7 +1,8 @@
-require("./tracing"); // Must be first
+require("dotenv").config();
+require("./tracing");
+
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
 const evaluateRoute = require("./evaluate");
 
 const app = express();
