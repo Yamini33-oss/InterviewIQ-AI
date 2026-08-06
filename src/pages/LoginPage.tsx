@@ -151,15 +151,15 @@ const handleAuth = async (e: React.FormEvent) => {
           <button
             onClick={async () => {
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: window.location.origin + "/dashboard",
-    },
-  });
+  provider: "google",
+  options: {
+    redirectTo: "https://interview-iq-ai-n71y.vercel.app/dashboard",
+  },
+});
 
-  if (error) {
-    alert(error.message);
-  }
+if (error) {
+  alert(error.message);
+}
 }}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl glass glass-hover px-4 py-3 text-sm font-medium text-white"
           >
