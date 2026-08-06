@@ -8,11 +8,7 @@ const evaluateRoute = require("./evaluate");
 const app = express();
 
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://your-vercel-domain.vercel.app"
-  ],
-  methods: ["GET", "POST"],
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
