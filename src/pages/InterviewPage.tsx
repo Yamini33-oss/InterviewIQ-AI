@@ -45,7 +45,9 @@ const [results, setResults] = useState<any[]>([]);
   };
 
 const evaluateAnswer = async (question: string, answer: string) => {
-  const response = await fetch("http://localhost:5000/api/evaluate", {
+  const response = await fetch(
+  `${import.meta.env.VITE_API_URL}/api/evaluate`,
+  {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -54,7 +56,8 @@ const evaluateAnswer = async (question: string, answer: string) => {
       question,
       answer,
     }),
-  });
+  }
+);
 
   if (!response.ok) {
   const errorText = await response.text();
